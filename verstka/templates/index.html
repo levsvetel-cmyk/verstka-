@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Nexus - магазин техники{% endblock %}
+
+{% block content %}
+
+    <!-- большой блок с картинкой -->
+    <div class="banner text-center text-white mb-4">
+        <h1>Электроника по низким ценам</h1>
+        <p class="lead">Смартфоны, ноутбуки и аксессуары с доставкой</p>
+        <a href="#catalog" class="btn btn-primary btn-lg">Смотреть товары</a>
+    </div>
+
+    <!-- сообщение после регистрации -->
+    {% if registered %}
+    <div class="container">
+        <div class="alert alert-success">Вы успешно зарегистрировались!</div>
+    </div>
+    {% endif %}
+
+    <!-- товары из базы данных -->
+    <div class="container" id="catalog">
+        <h2 class="text-center mb-4">Наши товары</h2>
+
+        <div class="row">
+
+            {% for p in products %}
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <img src="/static/{{ p.image }}" class="card-img-top" alt="{{ p.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ p.name }}</h5>
+                        <p class="card-text">{{ p.description or "" }}</p>
+
+                        <!-- наличие берем из поля stock -->
+                        {% if p.stock > 0 %}
+                        <span class="badge bg-success mb-2">В наличии: {{ p.stock }} шт.</span>
+                        {% else %}
+                        <span class="badge bg-secondary mb-2">Нет в наличии</span>
+                        {% endif %}
+
+                        <p class="price">{{ p.price|int }} руб.</p>
+
+                        {% if p.stock > 0 %}
+                        <a href="#" class="btn btn-success">Купить</a>
+                        {% else %}
+                        <a href="#" class="btn btn-secondary disabled">Купить</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-center">Ничего не найдено</p>
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <!-- преимущества магазина -->
+    <div class="features py-5 mt-4">
+        <div class="container">
+            <h2 class="text-center mb-4">Почему выбирают нас</h2>
+            <div class="row text-center">
+
+                <div class="col-md-4 mb-3">
+                    <i class="bi bi-truck"></i>
+                    <h5 class="mt-2">Быстрая доставка</h5>
+                    <p>Привезем заказ по всей России в течение нескольких дней</p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <i class="bi bi-shield-check"></i>
+                    <h5 class="mt-2">Гарантия на все товары</h5>
+                    <p>Если что-то сломалось, обменяем или вернем деньги</p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <i class="bi bi-credit-card"></i>
+                    <h5 class="mt-2">Удобная оплата</h5>
+                    <p>Можно платить картой или наличными при получении</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

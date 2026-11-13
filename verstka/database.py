@@ -3,12 +3,11 @@ from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String, Float, Text, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
-# подключение к базе (файл shop.db создастся сам)
 engine = create_engine("sqlite:///shop.db")
 Base = declarative_base()
 
 
-# пользователи (клиенты и админы)
+
 class User(Base):
     __tablename__ = "auth_user"
 
@@ -21,7 +20,7 @@ class User(Base):
     orders = relationship("Order", back_populates="user")
 
 
-# товары
+
 class Product(Base):
     __tablename__ = "shop_product"
 
@@ -35,8 +34,6 @@ class Product(Base):
 
     order_items = relationship("OrderItem", back_populates="product")
 
-
-# заказы
 class Order(Base):
     __tablename__ = "shop_order"
 
@@ -50,7 +47,7 @@ class Order(Base):
     items = relationship("OrderItem", back_populates="order")
 
 
-# позиции в заказе
+
 class OrderItem(Base):
     __tablename__ = "shop_orderitem"
 
@@ -64,21 +61,21 @@ class OrderItem(Base):
     product = relationship("Product", back_populates="order_items")
 
 
-# создаем все таблицы
+
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 
 
-# заполняем базу товарами с сайта (только если база пустая)
+
 def add_start_data():
     session = Session()
 
     if session.query(Product).count() == 0:
         products = [
-            Product(name="Смартфон Samsung 17A", price=24990, stock=10, image="img/phone.jpg"),
-            Product(name="Ноутбук Asus Vivobok", price=49990, stock=5, image="img/laptop.jpg"),
-            Product(name="Наушники AirPods 5", price=15490, stock=20, image="img/headphones.jpg"),
+            Product(name="Смартфон Samsung 17A", price=24990, description="128 ГБ памяти, яркий экран, хорошая камера", stock=10, image="img/phone.jpg"),
+            Product(name="Ноутбук Asus Vivobook", price=49990, description="15.6 дюймов, 8 ГБ оперативной памяти, SSD 512 ГБ", stock=5, image="img/laptop.jpg"),
+            Product(name="Наушники AirPods 5", price=15490, description="Беспроводные, с зарядным кейсом, удобно сидят в ушах", stock=20, image="img/headphones.jpg"),
         ]
         session.add_all(products)
 
@@ -93,19 +90,18 @@ def add_start_data():
 add_start_data()
 
 
-# проверка, что все работает
+
 if __name__ == "__main__":
     session = Session()
 
-    # создаем обычного пользователя, если его еще нет
     user = session.query(User).filter_by(username="ivan").first()
     if user is None:
         user = User(username="ivan", password="12345", email="ivan@mail.ru")
         session.add(user)
         session.commit()
 
-    # делаем заказ: ноутбук и наушники
-    laptop = session.query(Product).filter_by(name="Ноутбук Asus Vivobok").first()
+
+    laptop = session.query(Product).filter_by(name="Ноутбук Asus Vivobook").first()
     headphones = session.query(Product).filter_by(name="Наушники AirPods 5").first()
 
     order = Order(user_id=user.id, total_price=laptop.price + headphones.price)
@@ -116,12 +112,10 @@ if __name__ == "__main__":
     session.add(OrderItem(order_id=order.id, product_id=headphones.id, quantity=1, price=headphones.price))
     session.commit()
 
-    # выводим товары
     print("Товары:")
     for p in session.query(Product).all():
         print("  ", p.id, p.name, p.price, "руб., на складе:", p.stock)
 
-    # выводим заказы
     print("Заказы:")
     for o in session.query(Order).all():
         print("  Заказ №", o.id, "пользователь:", o.user.username, "статус:", o.status, "сумма:", o.total_price)
